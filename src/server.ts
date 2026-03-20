@@ -7,7 +7,7 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { testConnection } from './db/index'
 
-
+import providerRouter  from './routes/providerRouter'
 const app = express()
 const httpServer = createServer(app)
 
@@ -31,6 +31,10 @@ app.use(morgan('dev'))
 app.use('/health', (_req: Request, res: Response ) => {
     res.json({ status: 'ok', env: process.env.NODE_ENV })
 });
+
+// --- Routers ---
+app.use('/api', providerRouter)
+
 
 // --- 404 ---
 app.use((_req: Request, res: Response ) => {
