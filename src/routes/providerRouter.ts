@@ -4,6 +4,6 @@ import getProviders from "@controllers/provider_controller";
 
 const providerRouter = Router()
 
-providerRouter.get('/', getProviders)
+providerRouter.get('/providers', getProviders)
 
 export default providerRouter
