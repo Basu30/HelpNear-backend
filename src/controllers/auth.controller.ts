@@ -9,7 +9,8 @@ import { type TokenPayload, generateAccessToken, generateRefreshToken, verifyAcc
 
 
 
-// REGISTER
+// ---------------------------------- REGISTER ---------------------------------
+
 /* *******************************************************************************
                 THE REGISTER DOES 5 THINGS IN ORDER:
   1. Validate the input     ->   is email valid? is password long enough?
@@ -91,7 +92,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     }
 }
 
-// LOGIN
+//  ------------------------------- LOGIN ------------------------------------------
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         // VALIDATE INPUT
@@ -180,6 +181,96 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
                 role: user.role,
             },
         })
+    } catch (err) {
+        next(err)
+    }
+}
+
+// ----------------------- GET ME ------------------------------------------------
+  /* 
+    What: returns current logged-in user from their access token
+    When: GET /api/auth/me -- called by frontend on app load
+    Why: frontend needs to know who is logged in after page refresh
+  */
+export const getMe = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        /*
+          What: req.user is attached by auth middleware (built next)
+          When: middleware already verified the token and put userId on req
+        */
+        const userId = (req as any).user.userId
+
+        const result = await query(
+            `Select id, full_name, email, phone, role, is_active, is_verified, created_at
+            From users Where id = $1`, 
+            [userId]
+        )
+
+        if (!result.rows[0]) {
+            throw new HttpError('User not found', 404)
+        }
+
+        res.json({ user: result.rows[0] })
+    } catch (err) {
+        next(err)
+    }
+}
+
+// ----------------------- REFRESH TOKEN ------------------------------------------
+  /*
+    What: issues a new access token using the refresh token cookie
+    When: POST /api/auth/refresh -- called when access token expires
+    Why: access token lasts 15min -- without refresh, user logs out every 15min
+  */
+
+export const refresh = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        /*
+          What: read refresh token from httpOnly cookie
+          Why: it was stored there on login -- not in the request body
+        */
+        const token = req.cookies?.refreshToken
+
+        if(!token) {
+            throw new HttpError('No refresh token', 401)
+        }
+
+        
+        /* Verify the refresh token -- throw if expired or tampered */
+        const payload = verifyRefreshToken(token)
+
+        /* Issue a brand new access token with same userId + role */
+        const accessToken = generateAccessToken({
+            userId: payload.userId,
+            role: payload.role,
+        })
+
+        res.json({ accessToken })
+    } catch (err) {
+        next(err)
+    }
+}
+
+// ---------------------------- LOGOUT ------------------------------------
+  /*
+    What: clears the refresh token cookie
+    When: POST /api/auth/logout
+    Why: access token expires on its own (15min)
+         refresh token must be actively cleared from cookie
+  */
+export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        /*
+          What: clearCookie removes the httpOnly cookie from the browser
+          Why: without this, refresh token stays valid for 7 days even after logout
+        */
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        })
+
+        res.json({ message: 'Logged out successfully' })
     } catch (err) {
         next(err)
     }
