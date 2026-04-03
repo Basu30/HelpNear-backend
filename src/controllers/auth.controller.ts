@@ -22,7 +22,9 @@ import { type TokenPayload, generateAccessToken, generateRefreshToken, verifyAcc
 ********************************************************************************* */
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    
     try {
+         console.log("req.body: ", req.body)
         // VALIDATE INPUT
         const parsed = registerSchema.safeParse(req.body)        // Zod checks the request body against registerSchema
         
@@ -32,7 +34,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         }
 
         const { full_name, email, password, phone, role } = parsed.data
-        
+
+       
         // CHECK EMAIL NOT ALREADY TAKEN
         const existing = await query(                            // Query the users table for existing email
             'Select id from users where email = $1',
