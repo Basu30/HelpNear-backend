@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from 'bcrypt';
-import { query, withTransaction } from '../db/index';
+import { query, withTransaction } from '../db';
 import HttpError from "@utils/http-error";
 import { registerSchema } from "@validators/auth.validator";
 import { loginSchema } from "@validators/auth.validator";

@@ -26,8 +26,8 @@ export const registerSchema = z.object({
 
 // LOGIN SCHEMA   ->    Validates login request body
 export const loginSchema = z.object({
-    email: z.string().email('Invalid email'),
-    password: z.string().min(1, 'Password required')
+    email: z.string().email('Invalid email').nonempty('Email input should not be empty'),
+    password: z.string().min(1, 'Password required').nonempty('Password input should not be empty')
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>

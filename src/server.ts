@@ -8,10 +8,12 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { testConnection } from './db/index'
 
-
-import authRoutes from './routes/auth.routes'
-import providerRouter  from './routes/providerRouter'
+// IMPORTING ROUTERS
+import authRoutes from '@routes/auth.routes'
+import providerRouter  from '@routes/providerRouter'
 import customerRouter from '@routes/customerRouter'
+import jobRouter from '@routes/job.routes'
+
 const app = express()
 const httpServer = createServer(app)
 
@@ -33,7 +35,7 @@ app.use(morgan('dev'))
 app.use(cookieParser());
 
 // --- HEALTH CHECK ------------------------------
-app.use('/health', (_req: Request, res: Response ) => {
+app.get('/health', (_req: Request, res: Response ) => {
     res.json({ status: "It's working!", env: process.env.NODE_ENV })
 });
 
@@ -41,6 +43,7 @@ app.use('/health', (_req: Request, res: Response ) => {
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1', providerRouter)
 app.use('/api/v1', customerRouter)
+app.use('/api/v1', jobRouter)
 
 
 // --- 404 --------------------------------------------------
@@ -48,13 +51,21 @@ app.use((_req: Request, res: Response ) => {
     res.status(404).json({ error: 'Route not found' })
 });
 
-// -- ERROR HANDLER -----------------------------------------
-app.use((err: Error, _req: Request, res: Response ) => {
+// -- GLOBAL ERROR HANDLER -----------------------------------------
+/**
+ * What: catches all errors thrown with next(err) across the app
+ * Why: 4 parameters required - Express identifies error handlers this way 
+ */
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction ) => {
     console.error(err.stack)
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ 
+        error: process.env.NODE_ENV === 'production'
+        ? 'Internal server error'                         // hide details in production
+        : err.message                                     // show details in development
+    })
 });
 
-// --- START ---
+// --- START --------------------------------------------
 const PORT = Number(process.env.PORT) || 5000
 
 async function start() {
@@ -66,5 +77,5 @@ async function start() {
 
 start().catch((err) => {
     console.error('Failed to start: ', err.message)
-    process.exit();
+    process.exit(1);
 })
