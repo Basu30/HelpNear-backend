@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { query } from '../db'
+import { query } from '@db'
 import { jobRequestSchema } from '@validators/job.validator';
-import  HttpError  from '../utils/http-error'
+import HttpError  from '@utils/http-error'
+
+// --------- CREATE JOB -------------------------------------------------
 
 export const createJob = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -30,7 +32,7 @@ export const createJob = async (req: Request, res: Response, next: NextFunction)
         }
      
         const jobResult = await query(
-            `Insert into job_request
+            `Insert into job_requests
                 ( customer_id, category_id, title, 
                 description, budget_min, budget_max, city, 
                 district, preferred_date, preferred_time )
@@ -39,21 +41,108 @@ export const createJob = async (req: Request, res: Response, next: NextFunction)
 
             Returning id, customer_id, category_id, title, 
                       description, budget_min, budget_max, city, 
-                      district, preferred_date, preffered_time, 
+                      district, preferred_date, preferred_time, 
                       status, created_at, updated_at`,
 
             [
                 customer_id, category_id, title, 
-                description, budget_max ?? null, budget_min ?? null, 
+                description, budget_min ?? null, budget_max ?? null, 
                 city, district ?? null , preferred_date ?? null, preferred_time ?? null
             ]
         )
 
-        const newJob = jobResult.rows[0]    
+      
         
         res.status(201).json({
-            message: 'Job Request Created successfully',
-            job: newJob
+            message: 'Job request created successfully',
+            job: jobResult.rows[0]
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+// --------------- GET ALL OPEN JOBS (with pagination) ------------------------------------------------
+
+export const getAllJobs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    
+    try {
+        const page = Number(req.query.page) || 1
+        const limit = Number(req.query.limit) || 10
+        const offset = (page - 1) * limit
+
+        const result = await query(
+            `Select 
+                id, title, description, budget_min, budget_max, 
+                city, district, preferred_date, preferred_time, 
+                created_at, updated_at
+            From job_requests 
+            Where status = 'open'
+            Order by created_at DESC
+            Limit $1 offset $2`,
+            [limit, offset]
+        )
+
+        res.status(200).json({
+            jobs: result.rows,
+            count: result.rowCount,
+            page,
+            limit
+        })
+
+    } catch (err) {
+        next(err)
+    }
+}
+
+// ------------- GET CUSTOMER'S OWN JOBS --------------------------------------------------
+
+export const getJobForCustomer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+
+    const customer_id = req.user?.userId
+    try {
+        const result = await query(
+            `Select 
+                id, customer_id, title, description, budget_min, budget_max, 
+                city, district, preferred_date, preferred_time, 
+                created_at, updated_at
+            From job_requests 
+            Where customer_id = $1`,
+            [customer_id]
+        )
+
+        res.status(200).json({
+            jobs: result.rows,
+            count: result.rowCount
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+// ------------- GET JOB BY ID ---------------------------------------------
+
+export const getJobById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    
+    const { jobId } = req.params;
+
+    try {
+        const result = await query(
+            `Select 
+                id, customer_id, title, description, budget_min, budget_max, 
+                city, district, preferred_date, preferred_time, status,
+                selected_quote_id, created_at, updated_at
+            From job_requests 
+            Where id = $1`,
+            [jobId]
+        )
+
+        if (result.rows.length === 0) {
+            throw new HttpError('Job not found', 404)
+        }
+
+        res.status(200).json({
+            job: result.rows[0]
         })
     } catch (err) {
         next(err)

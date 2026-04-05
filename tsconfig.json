@@ -22,6 +22,7 @@
       "@services/*":    ["./src/services/*"],
       "@validators/*":  ["./src/validators/*"],
       "@utils/*":       ["./src/utils/*"],
+      "@db":            ["./src/db/index.ts"],
       "@db/*":          ["./src/db/*"],
       "@types/*":       ["./src/types/*"]
     }

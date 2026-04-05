@@ -36,6 +36,7 @@
     "@types/pg": "^8.18.0",
     "eslint": "^9.6.0",
     "prettier": "^3.3.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.0.0"
