@@ -204,7 +204,7 @@ export const getMe = async (req: Request, res: Response, next: NextFunction): Pr
         const userId = (req as any).user.userId
 
         const result = await query(
-            `Select id, full_name, email, phone, role, is_active, is_verified, created_at
+            `Select id, full_name, email, phone, role, is_active, created_at
             From users Where id = $1`, 
             [userId]
         )

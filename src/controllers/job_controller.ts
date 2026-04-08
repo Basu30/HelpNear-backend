@@ -104,7 +104,7 @@ export const getJobForCustomer = async (req: Request, res: Response, next: NextF
         const result = await query(
             `Select 
                 id, customer_id, title, description, budget_min, budget_max, 
-                city, district, preferred_date, preferred_time, 
+                city, district, preferred_date, preferred_time, status,
                 created_at, updated_at
             From job_requests 
             Where customer_id = $1`,

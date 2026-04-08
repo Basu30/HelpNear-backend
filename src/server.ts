@@ -13,6 +13,7 @@ import authRoutes from '@routes/auth.routes'
 import providerRouter  from '@routes/providerRouter'
 import customerRouter from '@routes/customerRouter'
 import jobRouter from '@routes/job.routes'
+import categoryRouter from '@routes/category.routes'
 
 const app = express()
 const httpServer = createServer(app)
@@ -44,6 +45,7 @@ app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1', providerRouter)
 app.use('/api/v1', customerRouter)
 app.use('/api/v1', jobRouter)
+app.use('/api/v1', categoryRouter)
 
 
 // --- 404 --------------------------------------------------
