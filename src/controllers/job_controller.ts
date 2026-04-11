@@ -21,9 +21,9 @@ export const createJob = async (req: Request, res: Response, next: NextFunction)
 
         const category = await query(
             `Select id 
-            From service_categories 
-            Where id = $1 
-            AND is_active = true`,
+                From service_categories 
+                Where id = $1 
+                AND is_active = true`,
             [category_id]
         )
 
