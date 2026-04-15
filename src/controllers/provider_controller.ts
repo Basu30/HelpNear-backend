@@ -48,7 +48,7 @@ export const getOwnProfile = async (req: Request, res: Response, next: NextFunct
             `Select 
                 id, bio, experience_years, 
                 city, district, average_rating, 
-                total_reviews, completed_jobs_count
+                total_reviews, completed_jobs
             From provider_profiles
             Where user_id = $1 `,
             [provider_id]
@@ -148,7 +148,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
             Returning 
                 id, user_id, bio, experience_years, 
                 city, district, is_verified, 
-                average_rating, total_reviews, completed_jobs_count, 
+                average_rating, total_reviews, completed_jobs, 
                 created_at, updated_at`,
 
             [bio ?? null, experience_years ?? null, city ?? null, district ?? null, user_id]
@@ -227,7 +227,7 @@ export const updateCategories = async (req: Request, res: Response, next: NextFu
              */
             for (const category_id of category_ids) {
                 await client.query(
-                    `Insert Into provider_profiles
+                    `Insert Into provider_categories
                         (provider_profile_id, category_id)
                     Values ($1, $2)`,
                 [profileId, category_id]
