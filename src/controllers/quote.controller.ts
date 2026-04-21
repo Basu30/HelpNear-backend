@@ -87,6 +87,18 @@ export const submitQuote = async (req: Request, res: Response, next: NextFunctio
 }
 
 
+// ---------------- ALL JOBS WITH QUOTES -------------------------------------
+
+// export const allJobsWithQuotes =  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    
+//     try {
+//         const result = await query(
+//             `Select `
+//         )
+//     }
+// }
+
+
 export const getJobQuotes = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 
     try {
@@ -117,6 +129,9 @@ export const getJobQuotes = async (req: Request, res: Response, next: NextFuncti
                 q.status, q.created_at, 
                 u.id AS provider_user_id,
                 u.full_name AS provider_name,
+                pp.city AS provider_city,
+                pp.district AS provider_district,
+                pp.total_reviews AS provider_reviews,
                 pp.average_rating, pp.completed_jobs,
                 pp.is_verified                
             From quotes q
@@ -150,9 +165,11 @@ export const getProviderQuotes = async (req: Request, res: Response, next: NextF
                 jr.id AS job_id,
                 jr.title, jr.description, jr.budget_min, jr.budget_max,
                 jr.city, jr.district, 
-                jr.status AS job_status
+                jr.status AS job_status,
+                u.full_name AS customer_name
             From quotes q
-            Join job_requests jr ONj r.id = q.job_request_id 
+            Join job_requests jr ON jr.id = q.job_request_id 
+            Join users u ON u.id = jr.customer_id
             Where q.provider_id = $1
             Order by q.created_at DESC`,
             [provider_id]
@@ -249,12 +266,17 @@ export const acceptQuote = async (req: Request, res: Response, next: NextFunctio
         const quote = quoteResult.rows[0]
 
         // VALIDATE STATUS
+        if (quote.status === 'accepted'){
+            throw new HttpError('Quote already accepted', 400)
+        }
         if (quote.status !== 'pending') {
             throw new HttpError('Only can accept quote is not pending', 400)
         }
+       
         if (quote.job_status !== 'open' && quote.job_status !== 'quoted') {
             throw new HttpError('Job is no longer accepting quotes', 400)
         }
+        
 
         // CHECKING OWNERSHIP
         if (quote.customer_id !== customer_id) {
