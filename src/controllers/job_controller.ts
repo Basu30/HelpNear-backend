@@ -73,10 +73,12 @@ export const getAllJobs = async (req: Request, res: Response, next: NextFunction
 
         const result = await query(
             `Select 
-                id, title, description, budget_min, budget_max, 
-                city, district, preferred_date, preferred_time, 
-                created_at, updated_at
-            From job_requests 
+                jr.id, jr.title, jr.description, jr.budget_min, jr.budget_max, 
+                jr.city, jr.district, jr.preferred_date, jr.preferred_time, 
+                jr.created_at, jr.updated_at, jr.category_id,
+                sc.name AS category_name
+            From job_requests jr
+            Join service_categories sc ON sc.id = jr.category_id
             Where status = 'open'
             Order by created_at DESC
             Limit $1 offset $2`,

@@ -27,7 +27,7 @@ export const getProviders = async (req: Request, res: Response, next: NextFuncti
                 Order by pp.average_rating DESC`,
         )
         res.json({ 
-            provider: result.rows,
+            providers: result.rows,
             count: result.rowCount,
         })
     } catch (err) {
