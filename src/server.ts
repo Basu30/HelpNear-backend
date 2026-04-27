@@ -16,6 +16,7 @@ import jobRouter from '@routes/job.routes'
 import categoryRouter from '@routes/category.routes'
 import quoteRouter from '@routes/quote.routes'
 import bookingRouter from '@routes/booking.routes'
+import messageRouter from '@routes/message.routes'
 
 const app = express()
 const httpServer = createServer(app)
@@ -50,6 +51,7 @@ app.use('/api/v1', jobRouter)
 app.use('/api/v1', categoryRouter)
 app.use('/api/v1', quoteRouter)
 app.use('/api/v1', bookingRouter)
+app.use('api/v1', messageRouter)
 
 
 // --- 404 --------------------------------------------------
