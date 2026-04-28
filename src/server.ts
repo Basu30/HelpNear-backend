@@ -7,6 +7,7 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { testConnection } from './db/index'
+import { initializeChatSocket } from './sockets/chat.socket'
 
 // IMPORTING ROUTERS
 import authRoutes from '@routes/auth.routes'
@@ -21,6 +22,7 @@ import messageRouter from '@routes/message.routes'
 const app = express()
 const httpServer = createServer(app)
 
+
 // --- Socket.IO ---------------------------------
 export const io = new Server(httpServer, {
     cors: {
@@ -29,6 +31,8 @@ export const io = new Server(httpServer, {
         credentials: true,
     },
 });
+
+initializeChatSocket(io);
 
 // --- MIDDLEWARE --------------------------------------
 app.use(helmet())
@@ -51,7 +55,7 @@ app.use('/api/v1', jobRouter)
 app.use('/api/v1', categoryRouter)
 app.use('/api/v1', quoteRouter)
 app.use('/api/v1', bookingRouter)
-app.use('api/v1', messageRouter)
+app.use('/api/v1', messageRouter)
 
 
 // --- 404 --------------------------------------------------
