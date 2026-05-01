@@ -290,8 +290,16 @@ export const cancelBooking = async (
            cancellation_reason = $1,
            updated_at = NOW()
        WHERE id = $2
-       RETURNING id, status, cancelled_at, cancellation_reason`,
+       RETURNING id, status, cancelled_at, cancellation_reason, accepted_quote_id`,
       [cancellation_reason ?? null, bookingId]
+    )
+
+    await query(
+      `Update quotes 
+      Set status = 'withdrawn',
+      updated_at = NOW()
+      Where id = $1`,
+      [result.rows[0].accepted_quote_id]
     )
 
     res.status(200).json({

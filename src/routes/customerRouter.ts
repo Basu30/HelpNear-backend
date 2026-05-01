@@ -5,6 +5,6 @@ import getCustomers from "@controllers/customer_controller";
 
 const customerRouter = Router()
 
-customerRouter.get('/customers', authMiddleware, requireRole('admin'), getCustomers)
+customerRouter.get('/customers', authMiddleware, getCustomers)
 
 export default customerRouter;

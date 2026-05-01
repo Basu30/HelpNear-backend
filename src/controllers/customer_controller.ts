@@ -1,5 +1,5 @@
-// import { HttpError } from '@utils/http-error'
-import { query } from '../db'
+import HttpError  from '@utils/http-error'
+import { query } from '@db'
 import { Request, Response, NextFunction } from 'express'
 
 
@@ -13,13 +13,21 @@ const getCustomers = async (req: Request, res: Response, next: NextFunction): Pr
     try {
         const result = await query(
             `Select 
-                id, full_name, email, phone, role,
-                is_active, is_email_verified, created_at
-            From users 
-            Where role = $1`,
-            ['customer']
+                u.id, u.full_name, u.email, u.phone,
+                cp.city, cp.district, cp.default_address, 
+                cp.average_rating, cp.total_reviews, cp.total_completed_bookings,
+                cp.total_cancelled_bookings, cp.created_at
+            From users u
+            Join customer_profiles cp ON cp.user_id = u.id
+            Where role = 'customer'
+            And u.is_active = true
+            Order by cp.average_rating DESC`,
+          
     )
-        res.json({ customers: result.rows })
+        res.status(200).json({
+            customers: result.rows,
+            count: result.rowCount
+        })
     } catch (err) {
         next(err)
     }

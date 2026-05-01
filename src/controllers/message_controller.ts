@@ -75,7 +75,7 @@ export const getMessages = async (req: Request, res: Response, next: NextFunctio
         )
 
         res.status(200).json({
-            message: messageResult.rows,
+            messages: messageResult.rows,
             count: messageResult.rowCount
         })
 
